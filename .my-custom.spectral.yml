@@ -1,15 +1,96 @@
-extends: spectral:oas
-
+extends:
+  - 'spectral:oas'
+documentationUrl: 'https://intacct.atlassian.net/wiki/spaces/~397816204/pages/1369407790/YAML+Schema+for+NextGen+API+Objects'
+functions:
+  - readOnlyTrue
+rules:
+#  ia-examples:
+#    description: Request and response should have examples.
+#    given:
+#      - $.paths[*][*]..content[*]
+#    type: validation
+#    recommended: true
+#    then:
+#      - field: examples
+#        function: truthy
+#    severity: error
+  ia-paths-operation-summary:
+    description: Operation must have summary.
+    given: '$.paths[*][?( @property === ''get'' || @property === ''put'' || @property === ''post'' || @property === ''delete'' || @property === ''options'' || @property === ''head'' || @property === ''patch'' || @property === ''trace'' )]'
+    type: validation
+    recommended: true
+    then:
+      - field: summary
+        function: truthy
+    severity: error
+  ia-x-mappedto:
+    description: Primitive property should have x-mappedTo field.
+    given: '$.properties[?(@.type != ''object'')]'
+    recommended: true
+    then:
+      field: x-mappedTo
+      function: truthy
+    severity: error
+  ia-x-href-readOnly:
+    description: href should always be readOnly.
+    given: $.properties.href
+    recommended: true
+    message: '{{error}}'
+    then:
+      field: readOnly
+      function: readOnlyTrue
+    severity: error
+  ia-x-object:
+    description: Only 'object' or 'array' types property could have the following fields [x-object, x-idempotence]
+    given: '$..[?(@property === ''x-object'' || @property === ''x-idempotence'')]^'
+    then:
+      field: type
+      function: pattern
+      functionOptions:
+        match: object|array
+    recommended: true
+    severity: error
+  ia-x-mappedToValues:
+    description: Only property with enum could have x-mappedToValues field.
+    given: '$.properties[?(!@.enum)]'
+    recommended: true
+    then:
+      field: x-mappedToValues
+      function: falsy
+    severity: error
+  oas3-api-servers: 'off'
+  oas3-valid-media-example: 'off'
+  # oas3-valid-media-example: 'off'
+  oas3-unused-component: 'off'
+  info-description: error
+  tag-description: error
+  operation-description: error
+  operation-tags: error
 except:
-  'fixtures/test.oas.yml#/paths/~1todos/get':
-    - operation-description
-
-  'fixtures/non_existent.yml#':
-    - oas3-api-servers
-    - openapi-tags
-
-  'fixtures/non_existent.yml#/info':
-    - info-contact
-
-  'fixtures/non_existent.yml#/paths/~1todos/get':
-    - operation-description
+  '#/properties/href':
+    - ia-x-mappedto
+  common/models/query.schema.yaml:
+    - ia-x-mappedto
+    ## - ia-x-mappedto-root
+  common/models/view.schema.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  common/models/metadata.schema.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  common/models/object-model.schema.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  common/models/object-reference.schema.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  common/models/metadata-pages.v1.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  common/models/metadata-extended.v1.yaml:
+    - ia-x-mappedto
+    # - ia-x-mappedto-root
+  template.s1.api.yaml:
+    - operation-operationId-valid-in-url
+  co/paths/file.s1.api.yaml:
+    - oas3-unused-schema
