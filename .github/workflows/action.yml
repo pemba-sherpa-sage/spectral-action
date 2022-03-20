@@ -2,6 +2,7 @@ name: Run Spectral on Pull Requests
 
 on:
   - pull_request
+  - push
 
 jobs:
   build:
@@ -15,3 +16,8 @@ jobs:
       - uses: stoplightio/spectral-action@v0.8.0
         with:
           file_glob: './fixtures/*.yml'
+          spectral_ruleset: .my-custom.spectral.yml
+        continue-on-error: true
+
+      - if: steps.expect-failure.output.status == 'failure'
+        run: exit 0
